@@ -37,25 +37,29 @@ router.get('/users', authenticatedUser , asyncHandler(async(req,res) => {
 
 
 router.post('/users', asyncHandler(async(req,res)=> {
-  try {
-  const user = await User.create({
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
-    emailAddress: req.body.emailAddress,
-    password:req.body.password,
-    createdAt: moment(),
-    updatedAt: moment()
-  });
-  res.location('/').status(201).json(user);
-} catch (error) {
-  console.log ('ERROR:', error.name);
-  if (error.name === "SequelizeValidationError" || error.name === "SequelizeUniqueConstraintError"){
-    const errors = error.errors.map(err => err.message);
-    res.status(400).json({errors})
-  } else {
-    throw error;
+  const { firstName, lastName, emailAddress, password } = req.body;
+  if (!firstName || !lastName || !emailAddress || !password) {
+    return res.status(400).json({ error: 'Missing required fields' });
   }
-}
+  try {
+    const user = await User.create({
+      firstName,
+      lastName,
+      emailAddress,
+      password,
+      createdAt: moment(),
+      updatedAt: moment(),
+    });
+  res.location('/').status(201).json({user});
+} catch (error) {
+    console.log ('ERROR:', error.name);
+    if (error.name === "SequelizeValidationError" || error.name === "SequelizeUniqueConstraintError") {
+      const errors = error.errors.map(err => err.message);
+      res.status(400).json({errors})
+    } else {
+      throw error;
+    }
+  }
 }));
 
 
@@ -69,14 +73,13 @@ router.get('/courses' ,asyncHandler(async (req, res) => {
     include: {
       model: User,
       attributes: {
-        exclude: ['createdAt', 'updatedAt']
+        exclude: ['password', 'createdAt', 'updatedAt']
       }
     },
     attributes: {
       exclude: ['createdAt', 'updatedAt']
     }
   });
-  console.log(courses);
   res.status(200).json(courses);
 }));
 
@@ -87,8 +90,14 @@ with that course and a 200 HTTP status code.
 */ 
 router.get('/courses/:id', asyncHandler(async(req,res) => {
   const course = await Course.findOne({
-    include: { model: User },
-    where: { id: req.params.id }
+    include: { model: User,
+      attributes: {
+        exclude: ['password', 'createdAt', 'updatedAt']
+      }},
+    where: { id: req.params.id },
+    attributes: {
+      exclude: ['createdAt', 'updatedAt']
+    },
   })
   res.status(200).json(course);
 }))
@@ -126,7 +135,7 @@ router.post('/courses', asyncHandler(async(req,res)=> {
 /api/courses/:id PUT route that will update the corresponding 
 course and return a 204 HTTP status code and no content.
 */
-router.put('/courses/:id',authenticatedUser , asyncHandler(async(req,res)=> {
+router.put('/courses/:id', authenticatedUser , asyncHandler(async(req,res)=> {
   try {
   const course = await Course.findOne({
     include: { model: User },
@@ -145,7 +154,7 @@ router.put('/courses/:id',authenticatedUser , asyncHandler(async(req,res)=> {
     });
     res.status(204).end();
   } else { 
-    res.status(403).json({error: "Unauthorized Login"});
+    res.status(401).json({error: "Unauthorized Login"});
   }
 } catch (error) {
   console.log ('ERROR:', error.name);
@@ -175,7 +184,7 @@ router.delete('/courses/:id',authenticatedUser, asyncHandler(async(req,res)=> {
     });
     res.status(204).end();
   } else { 
-    res.status(403).json({error: "Unauthorized Login"});
+    res.status(401).json({error: "Unauthorized Login"});
   }
 }));
 
