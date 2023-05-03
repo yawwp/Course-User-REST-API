@@ -48,17 +48,6 @@ module.exports = (sequelize) => {
     updatedAt: {
       type: DataTypes.DATE,
       allowNull: false,
-    },
-    userId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: -1,
-      references: {
-        model: 'User',
-        key: 'id'
-      },
-      onUpdate: 'CASCADE',
-      onDelete: 'CASCADE'
     }
   }, {
     sequelize,

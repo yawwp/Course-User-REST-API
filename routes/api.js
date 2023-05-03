@@ -50,7 +50,7 @@ router.post('/users', asyncHandler(async(req,res)=> {
       createdAt: moment(),
       updatedAt: moment(),
     });
-  res.location('/').status(201).json({user});
+  res.location('/').status(201).end();
 } catch (error) {
     console.log ('ERROR:', error.name);
     if (error.name === "SequelizeValidationError" || error.name === "SequelizeUniqueConstraintError") {
@@ -107,7 +107,7 @@ router.get('/courses/:id', asyncHandler(async(req,res) => {
 set the Location header to the URI for the newly created 
 course, and return a 201 HTTP status code and no content.
 */
-router.post('/courses', asyncHandler(async(req,res)=> {
+router.post('/courses', authenticatedUser, asyncHandler(async(req,res)=> {
  try {
   const course = await Course.create({
     title:req.body.title,
@@ -119,7 +119,7 @@ router.post('/courses', asyncHandler(async(req,res)=> {
     userId:req.body.userId
   })
   const { id } = course; 
-  res.location(`/courses/${id}`).status(201).json(course);
+  res.location(`/courses/${id}`).status(201).end();
 } catch (error) {
   console.log ('ERROR:', error.name);
   if (error.name === "SequelizeValidationError" || error.name === "SequelizeUniqueConstraintError") {
