@@ -38,26 +38,50 @@ router.get('/users', authenticatedUser , asyncHandler(async(req,res) => {
 
 router.post('/users', asyncHandler(async(req,res)=> {
   const { firstName, lastName, emailAddress, password } = req.body;
-  if (!firstName || !lastName || !emailAddress || !password) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
-  try {
-    const user = await User.create({
-      firstName,
-      lastName,
-      emailAddress,
-      password,
-      createdAt: moment(),
-      updatedAt: moment(),
-    });
-  res.location('/').status(201).end();
-} catch (error) {
-    console.log ('ERROR:', error.name);
-    if (error.name === "SequelizeValidationError" || error.name === "SequelizeUniqueConstraintError") {
-      const errors = error.errors.map(err => err.message);
-      res.status(400).json({errors})
-    } else {
-      throw error;
+  if (!firstName && !lastName && !emailAddress && !password) {
+    let firstName = '';
+    let lastName = '';
+    let emailAddress = '';
+    let password = '';
+    try {
+      const user = await User.create({
+        firstName,
+        lastName,
+        emailAddress,
+        password,
+        createdAt: moment(),
+        updatedAt: moment(),
+      });
+    res.location('/').status(201).end();
+  } catch (error) {
+      console.log ('ERROR:', error.name);
+      if (error.name === "SequelizeValidationError" || error.name === "SequelizeUniqueConstraintError") {
+        const errors = error.errors.map(err => err.message);
+        console.log(errors);
+        res.status(400).json({errors})
+      } else {
+        throw error;
+      }
+    }
+  } else {
+    try {
+      const user = await User.create({
+        firstName,
+        lastName,
+        emailAddress,
+        password,
+        createdAt: moment(),
+        updatedAt: moment(),
+      });
+    res.location('/').status(201).end();
+  } catch (error) {
+      console.log ('ERROR:', error.name);
+      if (error.name === "SequelizeValidationError" || error.name === "SequelizeUniqueConstraintError") {
+        const errors = error.errors.map(err => err.message);
+        res.status(400).json({errors})
+      } else {
+        throw error;
+      }
     }
   }
 }));
